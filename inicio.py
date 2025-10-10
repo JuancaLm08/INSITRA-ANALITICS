@@ -28,27 +28,45 @@ if 'usuario' in st.session_state and "api_key" in st.session_state:
 
         groupid_sel = opciones_companias[nombre_compania]
         placas_del_grupo = [d["carlicence"] for d in dispositivos if d["groupid"] == groupid_sel]
-        placa_sel = st.selectbox("Placa", options=sorted(placas_del_grupo))
+        placas_sel = st.multiselect("Placas", options=sorted(placas_del_grupo))
 
         # Encuentra terid de la placa elegida
-        terid_sel = next((d["terid"] for d in dispositivos
-                          if d["groupid"] == groupid_sel and d["carlicence"] == placa_sel), None)
+        terid_sel = [d["terid"] for d in dispositivos if d["groupid"] == groupid_sel and d["carlicence"] in placas_sel]
 
-        st.caption(f"terid: **{terid_sel or '—'}**")
+        #st.caption(f"terid: **{terid_sel or '—'}**")
+
+        options = ["Kilometraje","Conteo"]
+        selection = st.pills("Seleccione reportes", options=options, selection_mode="multi")
+        st.markdown(f"Your selected options: {selection}.")
 
         bttn_consulta = st.button("Realizar consulta")
+
+        
 
     st.title("INSITRA ANALITICS")
 
     kilometraje = {
-        "terid": [terid_sel],
+        "terid": terid_sel,
+        "starttime": "2025-10-01",
+        "endtime": "2025-10-08"
+    }
+
+    conteo_pasajeros = {
+        "terid": terid_sel,
         "starttime": "2025-10-01",
         "endtime": "2025-10-08"
     }
 
     if bttn_consulta:
 
-        ok, payload, err = cbc.api_post("basic/mileage/count", json=kilometraje,)
-        km = pd.DataFrame(payload.get("data", []))
-        st.dataframe(km, use_container_width=True)
+        if "Kilometraje" in selection:
+
+            ok, payload, err = cbc.api_post("basic/mileage/count", json=kilometraje,)
+            km = pd.DataFrame(payload.get("data"))
+            st.dataframe(km, use_container_width=True)
+        
+        if "Conteo" in selection:
+            ok, payload, err = cbc.api_post("basic/passenger-count/detail", json=conteo_pasajeros,)
+            conteo = pd.DataFrame(payload.get("data"))
+            st.dataframe(conteo, use_container_width=True)
 
