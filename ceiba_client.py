@@ -5,6 +5,7 @@ API = st.secrets.get("CEIBA_BASE_URL")
 # ---------------------------------------------------------------------
 # AUTENTICACIÓN
 # ---------------------------------------------------------------------
+
 def validarUsuario(usuario: str, clave: str):
     try:
         resp = requests.get(
@@ -60,16 +61,70 @@ def api_get(endpoint: str, params: dict):
     return True, data, None
 
 
+def api_post(endpoint: str, json: dict):
+
+    if "api_key" not in st.session_state:
+        return False, None, "No autenticado (falta api_key)."
+
+    #p = dict(params or {})
+    key = st.session_state["api_key"]
+    json["key"] = key
+
+    try:
+        r = requests.post(
+            f"{API}/{endpoint.lstrip('/')}",
+            json=json,  
+            timeout=20,
+        )
+    except requests.RequestException as e:
+        return False, None, f"Error de red: {e}"
+
+    # Algunas APIs devuelven siempre 200; igual parseamos JSON
+    try:
+        payload = r.json()
+    except ValueError:
+        return False, None, f"Respuesta no es JSON. HTTP {r.status_code}: {r.text[:200]}"
+
+    return True, payload, None
+
+@st.cache_data(ttl=300)
+def listar_grupos():
+    ok, payload, err = api_get("basic/groups", params={'key': st.session_state.get("api_key")})
+    if not ok:
+        return [], err
+    grupos = payload.get("data", []) or []
+    # Normaliza llaves esperadas
+    out = [{"groupid": g.get("groupid"), "groupname": g.get("groupname")} for g in grupos]
+    return out, None
+
+@st.cache_data(ttl=300)
+def listar_dispositivos_simplificado():
+    ok, payload, err = api_get("basic/devices", params={'key': st.session_state.get("api_key")})
+    if not ok:
+        return [], err
+    dispositivos = payload.get("data", []) or []
+    out = []
+    for d in dispositivos:
+        out.append({
+            "groupid": d.get("groupid"),
+            "carlicence": d.get("carlicence"),  # así está en la doc
+            "terid": d.get("terid"),
+        })
+    return out, None
+
+def terid_por_placa(placa: str):
+
+    ok, payload, err = api_get(f"basic/devices/{placa}")
+    if not ok:
+        return None, err
+    data = payload.get("data") or {}
+    return data.get("terid"), None
+
 def generarMenu(usuario):
      
     with st.sidebar:
         
         st.write(f"Hola **:blue-background[{usuario}]** ")
-        # Mostramos los enlaces de páginas
-        st.page_link("inicio.py", label="Inicio", icon=":material/home:")
-        st.subheader("Tableros")
-        st.page_link("pages/pagina1.py", label="Pagina 1", icon=":material/sell:")
-
         
         if st.button("Salir"):
             cerrar_sesion()
@@ -78,6 +133,7 @@ def login():
     if "usuario" in st.session_state and "api_key" in st.session_state:
         generarMenu(st.session_state["usuario"])
     else:
+        st.header("INICIAR SESIÓN")
 
         with st.form("frmLogin"):
             parUsuario = st.text_input("Usuario")
