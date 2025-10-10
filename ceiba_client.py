@@ -60,7 +60,6 @@ def api_get(endpoint: str, params: dict):
 
     return True, data, None
 
-
 def api_post(endpoint: str, json: dict):
 
     if "api_key" not in st.session_state:
@@ -168,3 +167,4 @@ def require_login():
     if "usuario" not in st.session_state or "api_key" not in st.session_state:
         st.warning("Debes iniciar sesión para continuar.")
         st.stop()
+
