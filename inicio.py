@@ -17,7 +17,10 @@ if 'usuario' in st.session_state and "api_key" in st.session_state:
             st.stop()
 
         # Mapea id→nombre y nombre→id para usar selectbox por nombre
-        opciones_companias = {g["groupname"]: g["groupid"] for g in grupos}
+        opciones_companias = {}
+        for g in grupos:
+            opciones_companias[g["groupname"]] = g["groupid"]
+
         nombre_compania = st.selectbox("Compañía", options=sorted(opciones_companias.keys()))
 
         # Dispositivos
@@ -27,17 +30,25 @@ if 'usuario' in st.session_state and "api_key" in st.session_state:
             st.stop()
 
         groupid_sel = opciones_companias[nombre_compania]
-        placas_del_grupo = [d["carlicence"] for d in dispositivos if d["groupid"] == groupid_sel]
+
+        placas_del_grupo = []
+        for d in dispositivos:
+            if d["groupid"] == groupid_sel:
+                placas_del_grupo.append(d["carlicence"])
+
         placas_sel = st.multiselect("Placas", options=sorted(placas_del_grupo))
 
         # Encuentra terid de la placa elegida
-        terid_sel = [d["terid"] for d in dispositivos if d["groupid"] == groupid_sel and d["carlicence"] in placas_sel]
+        terid_sel = []
+        for d in dispositivos:
+            if d["groupid"] == groupid_sel and d["carlicence"] in placas_sel:
+                terid_sel.append(d["terid"])
 
         #st.caption(f"terid: **{terid_sel or '—'}**")
 
         options = ["Kilometraje","Conteo"]
         selection = st.pills("Seleccione reportes", options=options, selection_mode="multi")
-        st.markdown(f"Your selected options: {selection}.")
+        #st.markdown(f"Haz seleccionado: {selection}.")
 
         bttn_consulta = st.button("Realizar consulta")
 
@@ -60,13 +71,18 @@ if 'usuario' in st.session_state and "api_key" in st.session_state:
     if bttn_consulta:
 
         if "Kilometraje" in selection:
-
             ok, payload, err = cbc.api_post("basic/mileage/count", json=kilometraje,)
-            km = pd.DataFrame(payload.get("data"))
-            st.dataframe(km, use_container_width=True)
+            if ok:
+                km = pd.DataFrame(payload.get("data"))
+                st.dataframe(km, use_container_width=True)
+            else:
+                st.error("Por favor seleccione unidades.")
         
         if "Conteo" in selection:
             ok, payload, err = cbc.api_post("basic/passenger-count/detail", json=conteo_pasajeros,)
-            conteo = pd.DataFrame(payload.get("data"))
-            st.dataframe(conteo, use_container_width=True)
+            if ok:
+                conteo = pd.DataFrame(payload.get("data"))
+                st.dataframe(conteo, use_container_width=True)
+            else:
+                st.error("Por favor seleccione unidades.")
 

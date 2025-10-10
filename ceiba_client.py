@@ -94,7 +94,14 @@ def listar_grupos():
         return [], err
     grupos = payload.get("data", []) or []
     # Normaliza llaves esperadas
-    out = [{"groupid": g.get("groupid"), "groupname": g.get("groupname")} for g in grupos]
+    out = []
+    for g in grupos:
+        item = {
+            "groupid": g.get("groupid"),
+            "groupname": g.get("groupname"),
+        }
+        out.append(item)
+
     return out, None
 
 @st.cache_data(ttl=300)
@@ -105,11 +112,13 @@ def listar_dispositivos_simplificado():
     dispositivos = payload.get("data", []) or []
     out = []
     for d in dispositivos:
-        out.append({
+        item = {
             "groupid": d.get("groupid"),
             "carlicence": d.get("carlicence"),  # así está en la doc
             "terid": d.get("terid"),
-        })
+        }
+        out.append(item)
+        
     return out, None
 
 def terid_por_placa(placa: str):
