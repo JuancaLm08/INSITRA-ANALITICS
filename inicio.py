@@ -36,6 +36,8 @@ if 'usuario' in st.session_state and "api_key" in st.session_state:
 
         st.caption(f"terid: **{terid_sel or '—'}**")
 
+        bttn_consulta = st.button("Realizar consulta")
+
     st.title("INSITRA ANALITICS")
 
     kilometraje = {
@@ -44,7 +46,9 @@ if 'usuario' in st.session_state and "api_key" in st.session_state:
         "endtime": "2025-10-08"
     }
 
-    ok, payload, err = cbc.api_post("basic/mileage/count", json=kilometraje,)
-    km = pd.DataFrame(payload.get("data", []))
-    st.dataframe(km, use_container_width=True)
+    if bttn_consulta:
+
+        ok, payload, err = cbc.api_post("basic/mileage/count", json=kilometraje,)
+        km = pd.DataFrame(payload.get("data", []))
+        st.dataframe(km, use_container_width=True)
 
