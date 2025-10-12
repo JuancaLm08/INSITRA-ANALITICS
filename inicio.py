@@ -93,6 +93,21 @@ if 'usuario' in st.session_state and "api_key" in st.session_state:
                 kud["Unidad"] = kud["Unidad"].map(map_terid_to_placa)
                 data_kud = kud
                 #st.dataframe(kud, use_container_width=True)
+                #    G R A F I C A M O S: kilometros por unidad y dia
+                kfig, kud_plot = graph.kilometros_unidad_dia(
+                    df = data_kud,
+                    unidades = placas_sel,
+                    rango_fechas = rango_fechas,
+                    valor = 'Kilometraje',
+                )
+        
+                    #    E X C E P C I O N E S: pasajeros por unidad y dia
+                if kfig is None or kud_plot.empty:
+                    st.warning('No hay datos en las fechas seleccionadas')
+                else:
+                    st.plotly_chart(kfig, use_container_width=True)
+                    with st.expander('Ver datos mostrados en la grafica'):
+                        st.dataframe(kud_plot, use_container_width=True)
             else:
                 st.error("Por favor seleccione unidades.")
         
@@ -104,35 +119,27 @@ if 'usuario' in st.session_state and "api_key" in st.session_state:
                 pud["Unidad"] = pud["Unidad"].map(map_terid_to_placa)
                 data_pud = pud
                 #st.dataframe(pud, use_container_width=True)
+
+                pfig, pud_plot = graph.pasajeros_unidad_dia(
+                df=data_pud,
+                unidades = placas_sel,
+                rango_fechas = rango_fechas,
+                valor = 'Ascensos')
+
+                #    E X C E P C I O N E S: pasajeros por unidad y dia
+                if pfig is None or pud_plot.empty:
+                    st.warning('No hay datos en las fechas seleccionadas')
+                else:
+                    st.plotly_chart(pfig, use_container_width=True)
+                    with st.expander('Ver datos mostrados en la grafica'):
+                        st.dataframe(pud_plot, use_container_width=True)
+
             else:
                 st.error("Por favor seleccione unidades.")
     
-        pfig, pud_plot = graph.pasajeros_unidad_dia(
-        df=data_pud,
-        unidades = placas_sel,
-        rango_fechas = rango_fechas,
-        valor = 'Ascensos')
-
-        #    E X C E P C I O N E S: pasajeros por unidad y dia
-        if pfig is None or pud_plot.empty:
-            st.warning('No hay datos en las fechas seleccionadas')
-        else:
-            st.plotly_chart(pfig, use_container_width=True)
-            with st.expander('Ver datos mostrados en la grafica'):
-                st.dataframe(pud_plot, use_container_width=True)
         
-            #    G R A F I C A M O S: kilometros por unidad y dia
-        kfig, kud_plot = graph.kilometros_unidad_dia(
-            df = data_kud,
-            unidades = placas_sel,
-            rango_fechas = rango_fechas,
-            valor = 'Kilometraje',
-        )
 
-            #    E X C E P C I O N E S: pasajeros por unidad y dia
-        if kfig is None or kud_plot.empty:
-            st.warning('No hay datos en las fechas seleccionadas')
-        else:
-            st.plotly_chart(kfig, use_container_width=True)
-            with st.expander('Ver datos mostrados en la grafica'):
-                st.dataframe(kud_plot, use_container_width=True)
+
+
+        
+            
