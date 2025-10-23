@@ -3,3 +3,6 @@ pandas
 requests
 plotly
 Pillow
+folium
+streamlit-folium
+shapely
