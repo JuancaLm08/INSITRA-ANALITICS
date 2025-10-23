@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import utilidades as util
 
 API = st.secrets.get("CEIBA_BASE_URL")
 # ---------------------------------------------------------------------
@@ -128,34 +129,44 @@ def terid_por_placa(placa: str):
     data = payload.get("data") or {}
     return data.get("terid"), None
 
-def generarMenu(usuario):
-     
-    with st.sidebar:
-        
-        st.write(f"Hola **:blue-background[{usuario}]** ")
-        
-        if st.button("Salir"):
-            cerrar_sesion()
-
 def login():
     if "usuario" in st.session_state and "api_key" in st.session_state:
-        generarMenu(st.session_state["usuario"])
+        util.navegacion(st.session_state["usuario"])
     else:
-        st.header("INICIAR SESIÓN")
+        # Contenedor centrado por columnas
+        c1, c2, c3 = st.columns([1, 3, 1])
+        with c2:
+            # Título "centrado" al ponerlo en la columna central
+            st.markdown(
+                "<h2 style='text-align:center;'> Iniciar Sesión </h2>",
+                unsafe_allow_html=True
+            )
 
-        with st.form("frmLogin"):
-            parUsuario = st.text_input("Usuario")
-            parPassword = st.text_input("Password", type="password")
-            btnLogin = st.form_submit_button("Ingresar", type="primary")
+            with st.form("frmLogin"):
+                # Labels grandes (ocultamos el label nativo del input)
+                st.subheader("Usuario")
+                parUsuario = st.text_input("", placeholder="Ingresa tu usuario",
+                                           label_visibility="collapsed")
+
+                st.subheader("Contraseña")
+                parPassword = st.text_input("", type="password", placeholder="Ingresa tu contraseña",
+                                            label_visibility="collapsed")
+
+                # Botón centrado en la columna media
+                b1, b2, b3 = st.columns([1, 4, 1])
+                with b2:
+                    btnLogin = st.form_submit_button("Acceder", type="primary",
+                                                     use_container_width=True)
+                
+                st.echo('Recuerda acceder con el mismo usuario y contraseña de CEIBA II ')
+                    
+                
 
         if btnLogin:
             with st.spinner("Validando..."):
                 ok, key, err = validarUsuario(parUsuario, parPassword)
             if ok and key:
                 _guardar_sesion(parUsuario, key)
-                # Navegación: si tienes Streamlit reciente puedes cambiar de página
-                #if redirect_to: 
-                #    st.switch_page(redirect_to)
                 st.rerun()
             else:
                 st.error(err or "Usuario o clave inválidos", icon=":material/gpp_maybe:")
@@ -165,6 +176,5 @@ def require_login():
     Úsalo al inicio de cada página interna para forzar que haya sesión.
     """
     if "usuario" not in st.session_state or "api_key" not in st.session_state:
-        st.warning("Debes iniciar sesión para continuar.")
+        #st.warning("Debes iniciar sesión para continuar.")
         st.stop()
-

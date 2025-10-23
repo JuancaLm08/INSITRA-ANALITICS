@@ -1,13 +1,10 @@
 import plotly.express as px
 import pandas as pd
 
-
 #Importamos datasets prcesados para la construcción del gráfico
-
 
 # P A S A J E R O S    P O R   U N I D A D    Y   D I A.
 
-#Graficamos PUD (Pasajeros por unidad y día) en Histograma
 def pasajeros_unidad_dia(   #Argumentos
         df: pd.DataFrame, 
         unidades: list[str],
@@ -59,7 +56,6 @@ def pasajeros_unidad_dia(   #Argumentos
     )
 
     return fig, df_filtrado
-
 
 # K I L O M E T R A J E    P O R    U N I D A D    Y    D I A.
 
@@ -115,3 +111,46 @@ def kilometros_unidad_dia(
     )
 
     return fig, df_filtrado
+
+# P A S A J E R O S  P O R   U N I D A D   D I A   P R O M E D I O
+
+def pasajeros_por_unidad_dia_promedio(
+        df: pd.DataFrame,
+        valor: str,
+):
+    
+    try:
+        #Df organizado:
+        df = df.sort_values(['Dia'])
+
+        #Configuración de la gráfica
+        fig = px.line(
+            df,
+            x = 'Dia',
+            y = valor,
+            markers=True,
+            title = f"{valor} por día.",
+        )
+
+        fig.update_layout(
+            #Tamaño del titulo de la gráfica.
+            title=dict(
+                x=0.5,
+                xanchor='center',
+                font=dict(size=28),
+            ),
+            xaxis_title = 'Dia',
+            yaxis_title = valor,
+            hovermode = 'x unified',
+            legend_title = 'Unidad',  
+        )
+
+        fig.update_yaxes(
+            range = [0,None], #Empieza en 0 y hasta donde llegue
+            rangemode = 'tozero',
+            zeroline = True,
+        )
+
+        return fig
+    except Exception as e:
+        return None
