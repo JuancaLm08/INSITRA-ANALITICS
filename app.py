@@ -44,6 +44,10 @@ if ok:
     conteo = pd.DataFrame(payload.get('data'))
     pdap = pcd.construir_padp(conteo,30)
 
+else:
+    st.warning("No hay datos para los filtros seleccionados.")
+    st.stop()
+
 #Graficamos pdapfig1 = Total de ascensos por dia
 pdapfig1 = graph.pasajeros_por_unidad_dia_promedio(
     df = pdap,

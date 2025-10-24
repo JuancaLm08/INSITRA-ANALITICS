@@ -37,7 +37,7 @@ st.title('INSITRA ANALYTICS: Ruta 🚦')
 st.header('Mapa de calor')
 
 # ---------- Rango de fechas ----------
-iniciop, finalp, rango_fechas = util.fecha_default(6,3)
+iniciop, finalp, rango_fechas = util.fecha_default(6)
 
 # ---------- Llamada a la API ----------
 conteo_pasajeros = {
@@ -50,7 +50,7 @@ ok, payload, err = cbc.api_post("basic/passenger-count/detail", json=conteo_pasa
 if not ok:
     st.error(err or "Error consultando CEIBA")
     st.stop()
-
+st.write(terids_todos)
 # ---------- Procesamiento y vista ----------
 conteo = pd.DataFrame(payload.get('data') or [])
 if conteo.empty:

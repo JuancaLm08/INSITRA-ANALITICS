@@ -3,7 +3,9 @@ import ceiba_client as cbc
 from datetime import date, timedelta
 
 def navegacion(usuario):
+
     with st.sidebar:
+        st.logo("img/LoginTitle.png", size="large")
         st.write(f"Hola **:blue-background[{usuario}]** ¿Que vamos a hacer hoy? ")
 
         if st.button('Cerrar Sesión', width="stretch"):
